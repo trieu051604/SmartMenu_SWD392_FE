@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    // === CÁC THAY ĐỔI QUAN TRỌNG ===
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./smartmenu/src/*"]
+    }
+    // ===============================
+  },
+  // === SỬA LỖI VITE.CONFIG.TS ===
+  "include": ["smartmenu/src", "smartmenu/vite.config.ts"],
+  // ===============================
+  "references": []
+}
+
