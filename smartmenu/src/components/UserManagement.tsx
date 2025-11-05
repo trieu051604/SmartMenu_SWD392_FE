@@ -1,34 +1,103 @@
-import { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Search, UserPlus, Edit, Trash2, MoreVertical } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Badge } from "./ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Search, UserPlus, Edit, Trash2, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+
+// 🧩 Import API kết nối backend
+import {
+  getUsers,
+  createUser,
+  deleteUser,
+} from "../api/modules/users";
 
 export function UserManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
+  const [users, setUsers] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    role: "store-staff",
+  });
 
-  const users = [
-    { id: 1, name: 'Nguyễn Văn A', email: 'nguyenvana@email.com', role: 'Admin', status: 'active', lastLogin: '2 giờ trước' },
-    { id: 2, name: 'Trần Thị B', email: 'tranthib@email.com', role: 'Brand Manager', status: 'active', lastLogin: '5 phút trước' },
-    { id: 3, name: 'Lê Văn C', email: 'levanc@email.com', role: 'Store Staff', status: 'active', lastLogin: '1 ngày trước' },
-    { id: 4, name: 'Phạm Thị D', email: 'phamthid@email.com', role: 'Brand Manager', status: 'inactive', lastLogin: '1 tuần trước' },
-    { id: 5, name: 'Hoàng Văn E', email: 'hoangvane@email.com', role: 'Store Staff', status: 'active', lastLogin: '30 phút trước' },
-    { id: 6, name: 'Đặng Thị F', email: 'dangthif@email.com', role: 'Admin', status: 'active', lastLogin: '3 giờ trước' },
-    { id: 7, name: 'Vũ Văn G', email: 'vuvang@email.com', role: 'Store Staff', status: 'active', lastLogin: '15 phút trước' },
-    { id: 8, name: 'Bùi Thị H', email: 'buithih@email.com', role: 'Brand Manager', status: 'active', lastLogin: '2 ngày trước' },
-  ];
+  // 🧠 Gọi API lấy danh sách user
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error("❌ Lỗi tải danh sách user:", err);
+    }
+  };
 
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // ➕ Thêm người dùng mới
+  const handleCreate = async () => {
+    try {
+      await createUser(newUser);
+      await fetchUsers();
+      setIsDialogOpen(false);
+      setNewUser({ fullName: "", email: "", password: "", role: "store-staff" });
+    } catch (err) {
+      console.error("❌ Lỗi tạo người dùng:", err);
+    }
+  };
+
+  // ❌ Xóa người dùng
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Bạn có chắc muốn xóa người dùng này không?")) return;
+    try {
+      await deleteUser(id);
+      await fetchUsers();
+    } catch (err) {
+      console.error("❌ Lỗi xóa người dùng:", err);
+    }
+  };
+
+  // 🔍 Lọc & tìm kiếm
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole =
+      roleFilter === "all" || user.role?.toLowerCase() === roleFilter.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
@@ -37,9 +106,12 @@ export function UserManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-gray-900">Quản lý người dùng</h2>
-          <p className="text-sm text-gray-500">Quản lý tài khoản và phân quyền người dùng</p>
+          <h2 className="text-gray-900 text-lg font-semibold">Quản lý người dùng</h2>
+          <p className="text-sm text-gray-500">
+            Quản lý tài khoản và phân quyền người dùng trong hệ thống
+          </p>
         </div>
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-500 hover:bg-orange-600">
@@ -47,33 +119,56 @@ export function UserManagement() {
               Thêm người dùng
             </Button>
           </DialogTrigger>
+
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Thêm người dùng mới</DialogTitle>
               <DialogDescription>
-                Nhập thông tin để tạo tài khoản người dùng mới
+                Nhập thông tin để tạo tài khoản mới
               </DialogDescription>
             </DialogHeader>
+
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Tên</Label>
-                <Input id="name" placeholder="Nguyễn Văn A" />
+                <Label>Họ tên</Label>
+                <Input
+                  value={newUser.fullName}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, fullName: e.target.value })
+                  }
+                  placeholder="Nguyễn Văn A"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="nguyenvana@email.com" />
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, email: e.target.value })
+                  }
+                  placeholder="example@email.com"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Mật khẩu</Label>
-                <Input id="password" type="password" placeholder="••••••••" />
+                <Label>Mật khẩu</Label>
+                <Input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) =>
+                    setNewUser({ ...newUser, password: e.target.value })
+                  }
+                  placeholder="••••••••"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Xác nhận mật khẩu</Label>
-                <Input id="confirm-password" type="password" placeholder="••••••••" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Chọn vai trò</Label>
-                <Select>
+                <Label>Vai trò</Label>
+                <Select
+                  value={newUser.role}
+                  onValueChange={(value) =>
+                    setNewUser({ ...newUser, role: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn vai trò" />
                   </SelectTrigger>
@@ -85,9 +180,15 @@ export function UserManagement() {
                 </Select>
               </div>
             </div>
+
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Hủy</Button>
-              <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => setIsDialogOpen(false)}>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Hủy
+              </Button>
+              <Button
+                className="bg-orange-500 hover:bg-orange-600"
+                onClick={handleCreate}
+              >
                 Tạo tài khoản
               </Button>
             </DialogFooter>
@@ -112,9 +213,9 @@ export function UserManagement() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả vai trò</SelectItem>
-            <SelectItem value="Admin">Admin</SelectItem>
-            <SelectItem value="Brand Manager">Brand Manager</SelectItem>
-            <SelectItem value="Store Staff">Store Staff</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="brand-manager">Brand Manager</SelectItem>
+            <SelectItem value="store-staff">Store Staff</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -127,39 +228,28 @@ export function UserManagement() {
               <TableHead>Tên</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Vai trò</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead>Đăng nhập lần cuối</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
+              <TableRow key={user.userId}>
+                <TableCell>{user.fullName}</TableCell>
                 <TableCell className="text-gray-600">{user.email}</TableCell>
                 <TableCell>
-                  <Badge 
+                  <Badge
                     variant="outline"
                     className={
-                      user.role === 'Admin' 
-                        ? 'border-orange-500 text-orange-600 bg-orange-50' 
-                        : user.role === 'Brand Manager'
-                        ? 'border-teal-500 text-teal-600 bg-teal-50'
-                        : 'border-blue-500 text-blue-600 bg-blue-50'
+                      user.role === "admin"
+                        ? "border-orange-500 text-orange-600 bg-orange-50"
+                        : user.role === "brand-manager"
+                        ? "border-teal-500 text-teal-600 bg-teal-50"
+                        : "border-blue-500 text-blue-600 bg-blue-50"
                     }
                   >
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={user.status === 'active' ? 'default' : 'secondary'}
-                    className={user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}
-                  >
-                    {user.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-gray-600">{user.lastLogin}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -172,7 +262,10 @@ export function UserManagement() {
                         <Edit className="w-4 h-4 mr-2" />
                         Chỉnh sửa
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
+                      <DropdownMenuItem
+                        className="text-red-600"
+                        onClick={() => handleDelete(user.userId)}
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Xóa
                       </DropdownMenuItem>
@@ -192,12 +285,16 @@ export function UserManagement() {
           <p className="text-gray-900 mt-1">{users.length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg border">
-          <p className="text-sm text-gray-600">Đang hoạt động</p>
-          <p className="text-gray-900 mt-1">{users.filter(u => u.status === 'active').length}</p>
+          <p className="text-sm text-gray-600">Admin</p>
+          <p className="text-gray-900 mt-1">
+            {users.filter((u) => u.role === "admin").length}
+          </p>
         </div>
         <div className="bg-white p-4 rounded-lg border">
-          <p className="text-sm text-gray-600">Người dùng mới (tuần này)</p>
-          <p className="text-gray-900 mt-1">12</p>
+          <p className="text-sm text-gray-600">Brand Manager</p>
+          <p className="text-gray-900 mt-1">
+            {users.filter((u) => u.role === "brand-manager").length}
+          </p>
         </div>
       </div>
     </div>
