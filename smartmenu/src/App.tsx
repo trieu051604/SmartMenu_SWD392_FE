@@ -31,6 +31,12 @@ export default function App() {
     setCurrentPage(page);
   };
 
+  const handleLogout = () => {
+    setUserRole(null);
+    setCurrentPage('dashboard');
+    setShowTVDisplay(false);
+  };
+
   // If showing TV Display
   if (showTVDisplay) {
     return (
@@ -136,6 +142,7 @@ export default function App() {
         currentPage={currentPage} 
         onNavigate={handleNavigate}
         userRole={userRole}
+        onLogout={handleLogout}
       >
         {renderPageContent()}
       </Layout>

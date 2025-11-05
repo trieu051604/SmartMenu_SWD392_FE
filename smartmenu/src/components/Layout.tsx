@@ -26,9 +26,10 @@ interface LayoutProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   userRole: 'admin' | 'brand-manager' | 'store-staff';
+  onLogout?: () => void;
 }
 
-export function Layout({ children, currentPage, onNavigate, userRole }: LayoutProps) {
+export function Layout({ children, currentPage, onNavigate, userRole, onLogout }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
@@ -182,7 +183,10 @@ export function Layout({ children, currentPage, onNavigate, userRole }: LayoutPr
                     Cài đặt
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem 
+                    className="text-red-600 cursor-pointer"
+                    onClick={onLogout}
+                  >
                     <LogOut className="w-4 h-4 mr-2" />
                     Đăng xuất
                   </DropdownMenuItem>
